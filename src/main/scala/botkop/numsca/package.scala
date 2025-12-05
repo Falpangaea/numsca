@@ -252,7 +252,11 @@ package object numsca {
     def gte(t1: Tensor, t2: Tensor): Tensor = {
       val Seq(ba1, ba2) = tbc(t1, t2)
       val d = ba1.dup()
-      Nd4j.getExecutioner.exec(new GreaterThanOrEqual(d, ba2, d, d.length()))
+
+      val inputs = Array(d, ba2)
+      val outputs = Array(d)
+
+      Nd4j.getExecutioner.exec(new GreaterThanOrEqual(inputs, outputs))
       new Tensor(d, true)
     }
 
@@ -264,7 +268,11 @@ package object numsca {
     def lte(t1: Tensor, t2: Tensor): Tensor = {
       val Seq(ba1, ba2) = tbc(t1, t2)
       val d = ba1.dup()
-      Nd4j.getExecutioner.exec(new LessThanOrEqual(d, ba2, d, d.length()))
+
+      val inputs = Array(d, ba2)
+      val outputs = Array(d)
+
+      Nd4j.getExecutioner.exec(new LessThanOrEqual(inputs, outputs))
       new Tensor(d, true)
     }
 
