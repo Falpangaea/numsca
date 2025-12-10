@@ -19,6 +19,24 @@ import scala.util.Random
 
 package object numsca {
 
+  enum BroadcastRule:
+    case AllowBroadcast, RequireSameShape
+
+    private inline def shapesEqual(a: INDArray, b: INDArray): Boolean =
+      a.shape.sameElements(b.shape)
+
+    inline def validate[A, B](inline a: A, inline b: B)(using
+        convA: Conversion[A, INDArray],
+        convB: Conversion[B, INDArray]
+    ): Boolean =
+      this match
+        case AllowBroadcast   => true
+        case RequireSameShape => shapesEqual(convA(a), convB(b))
+
+  given Conversion[Tensor, INDArray] = _.array
+
+  given Conversion[INDArray, INDArray] = identity
+
   implicit def selectionToTensor(ts: TensorSelection): Tensor =
     ts.asTensor
 

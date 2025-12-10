@@ -90,7 +90,11 @@ class Tensor(val array: INDArray, val isBoolean: Boolean = false)
   def /=(t: Tensor): Unit = array `divi` bc(t)
   def %=(t: Tensor): Unit = array `fmodi` bc(t)
 
-  def :=(t: Tensor): Unit = array `assign` t.array
+  def :=(t: Tensor)(using broadcastRule: BroadcastRule = BroadcastRule.RequireSameShape): Unit =
+    if !broadcastRule.validate(array, t) then
+      throw new IllegalArgumentException
+    array `assign` t.array
+
   def :=(d: Double): Unit = array `assign` d
 
   def maximum(other: Tensor): Tensor = Ops.max(this, other)

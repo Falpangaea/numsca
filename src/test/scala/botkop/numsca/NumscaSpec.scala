@@ -107,17 +107,6 @@ class NumscaSpec extends AnyFlatSpec with Matchers {
       Tensor(0.00, 1.00, -1.00, -1.00, -1.00, 5.00, 6.00, 7.00, 8.00, 9.00)
     assert(ns.arrayEqual(t, e1))
 
-    an[IllegalStateException] should be thrownBy {
-      t(2 :> 5) := -ns.ones(4)
-    }
-
-    // this does not throw an exception !!!
-    /*
-    an[IllegalStateException] should be thrownBy {
-      t(2 :> 6) := -ns.ones(4).reshape(2, 2)
-    }
-     */
-
     t(2 :> 5) := 33
     assert(
       ns.arrayEqual(
@@ -146,6 +135,78 @@ class NumscaSpec extends AnyFlatSpec with Matchers {
     val s = 3 :> -1
     assert(ns.arrayEqual(ta(:>, s), Tensor(3.00, 4.00, 5.00, 6.00, 7.00, 8.00)))
 
+    {
+      given BroadcastRule = BroadcastRule.AllowBroadcast
+
+      t(2 :> 5) := ns.ones(4)
+      assert(
+        ns.arrayEqual(
+          t,
+          Tensor(-1.00, -1.00, 1.00, 1.00, 1.00, -1.00, -1.00, -1.00, -1.00,
+            -1.00)
+        )
+      )
+
+      t(2 :> 5) := -ns.ones(1)
+      assert(ns.arrayEqual(t(0, 1), Tensor(-1.00, -1.00)))
+      assert(
+        ns.arrayEqual(t(5 :> 10), Tensor(-1.00, -1.00, -1.00, -1.00, -1.00))
+      )
+
+      t(2 :> 6) := ns.ones(4).reshape(2, 2)
+      assert(
+        ns.arrayEqual(
+          t,
+          Tensor(-1.00, -1.00, 1.00, 1.00, 1.00, 1.00, -1.00, -1.00, -1.00,
+            -1.00)
+        )
+      )
+    }
+  }
+
+  it should "should throw IllegalArugmentException with RequireSameShape when shape is not same" in {
+    val t = ta.copy()
+
+    given BroadcastRule = BroadcastRule.RequireSameShape
+
+    an[IllegalArgumentException] should be thrownBy {
+      t(2 :> 5) := -ns.ones(4)
+    }
+
+    an[IllegalArgumentException] should be thrownBy {
+      t(2 :> 5) := -ns.ones(1)
+    }
+
+    an[IllegalArgumentException] should be thrownBy {
+      t(2 :> 6) := -ns.ones(4).reshape(2, 2)
+    }
+  }
+
+  it should "should allow operations with AllowBroadcast when shape is not same" in {
+    val t = ta.copy()
+
+    given BroadcastRule = BroadcastRule.AllowBroadcast
+
+    t(2 :> 5) := -ns.ones(4)
+    assert(
+      ns.arrayEqual(
+        t,
+        Tensor(0.00, 1.00, -1.00, -1.00, -1.00, 5.00, 6.00, 7.00, 8.00, 9.00)
+      )
+    )
+
+    t(2 :> 5) := ns.ones(1)
+    assert(ns.arrayEqual(t(0 :> 3), Tensor(0.00, 1.00, 1.00)))
+    assert(ns.arrayEqual(t(5 :> 10), Tensor(5.00, 6.00, 7.00, 8.00, 9.00)))
+
+    t(2 :> 6) := ns.ones(4).reshape(2, 2)
+    println(t)
+    assert(
+      ns.arrayEqual(
+        t,
+        Tensor(0.00, 1.00, 1.00, 1.00, 1.00, 1.00, 6.00, 7.00, 8.00, 9.00)
+      )
+    )
   }
 
   it should "slice over multiple dimensions" in {
