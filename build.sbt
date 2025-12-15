@@ -7,7 +7,7 @@ ThisBuild / organization := "be.botkop"
 lazy val root = (project in file(".")).settings(
   name := "numsca",
   libraryDependencies ++= Seq(
-    "org.nd4j" % "nd4j-native-platform" % "1.0.0-alpha",
+    "org.nd4j" % "nd4j-native-platform" % "1.0.0-beta",
     "com.typesafe.scala-logging" %% "scala-logging" % "3.9.6",
     "ch.qos.logback" % "logback-classic" % "1.2.3",
     scalaTest % Test
